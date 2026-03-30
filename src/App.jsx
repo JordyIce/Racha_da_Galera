@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useData } from './hooks/useData';
+import LOGO from './logo.js';
 import './index.css';
 
 const MONTHS = [
@@ -148,7 +149,7 @@ export default function App() {
     <div className="app">
       {/* Header */}
       <header className="header">
-        <img src="/logo.png" alt="Racha da Galera" className="header-logo" />
+        <img src={LOGO} alt="Racha da Galera" className="header-logo" />
         <div>
           <div className="header-title">Racha da Galera</div>
           <div className="header-sub">Pontuação</div>
