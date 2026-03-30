@@ -148,10 +148,10 @@ export default function App() {
     <div className="app">
       {/* Header */}
       <header className="header">
-        <div className="header-icon">⚽</div>
+        <img src="/logo.png" alt="Racha da Galera" className="header-logo" />
         <div>
-          <div className="header-title">Racha FC — Ranking</div>
-          <div className="header-sub">Pontuação Geral do Grupo</div>
+          <div className="header-title">Racha da Galera</div>
+          <div className="header-sub">Pontuação</div>
         </div>
       </header>
 
