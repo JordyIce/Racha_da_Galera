@@ -63,17 +63,17 @@ function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen }
         {/* Period filter at bottom */}
         <div className="sidebar-footer">
           <div className="sidebar-period">Período</div>
-          <div className="period-btns">
-            {MONTHS.map(m => (
-              <button
-                key={m.key}
-                className={`period-btn ${month === m.key ? 'active' : ''}`}
-                onClick={() => setMonth(m.key)}
-              >
-                <span className="period-btn-dot" />
-                {m.label}
-              </button>
-            ))}
+          <div className="period-select-wrap">
+            <select
+              className="period-select"
+              value={month}
+              onChange={e => setMonth(e.target.value)}
+            >
+              {MONTHS.map(m => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </select>
+            <span className="period-select-arrow">▾</span>
           </div>
         </div>
       </aside>
@@ -326,9 +326,13 @@ export default function App() {
             <SummaryStrip data={data} />
 
             {page === 'resumo' && (
-              <div className="dashboard-grid">
-                <TopTen data={data} />
-                <div><BestPlayer player={data[0]} /></div>
+              <div className="resumo-grid">
+                <div className="resumo-top10">
+                  <TopTen data={data} />
+                </div>
+                <div className="resumo-side">
+                  <BestPlayer player={data[0]} />
+                </div>
               </div>
             )}
 
