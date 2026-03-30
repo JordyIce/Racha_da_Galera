@@ -418,16 +418,25 @@ body {
   background: rgba(255,255,255,0.02);
   border: 1px solid transparent;
   transition: all 0.18s ease;
-  cursor: default;
+  cursor: pointer;
   position: relative;
   overflow: hidden;
 }
 
-.ranking-item:hover { background: rgba(255,255,255,0.045); }
+.ranking-item:hover { background: rgba(255,255,255,0.05); transform: translateX(2px); }
 
 .ranking-item.rank-1 { background: rgba(255,184,0,0.08); border-color: rgba(255,184,0,0.18); }
 .ranking-item.rank-2 { background: rgba(184,196,212,0.07); border-color: rgba(184,196,212,0.15); }
 .ranking-item.rank-3 { background: rgba(232,144,74,0.07); border-color: rgba(232,144,74,0.15); }
+
+.ranking-item.selected {
+  background: rgba(0,230,118,0.09) !important;
+  border-color: rgba(0,230,118,0.35) !important;
+  box-shadow: 0 0 0 1px rgba(0,230,118,0.15), inset 0 0 20px rgba(0,230,118,0.04);
+}
+
+.ranking-item.selected .ranking-name { color: var(--green); }
+.ranking-item.selected .ranking-points { color: var(--green); }
 
 .ranking-position {
   font-family: var(--font-display);
