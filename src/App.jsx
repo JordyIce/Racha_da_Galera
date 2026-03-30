@@ -109,7 +109,7 @@ function SummaryStrip({ data }) {
 }
 
 /* ── BEST PLAYER ── */
-function BestPlayer({ player }) {
+function BestPlayer({ player, isTop1 }) {
   if (!player) return null;
   return (
     <div className="panel best-player">
@@ -117,8 +117,8 @@ function BestPlayer({ player }) {
         <span className="panel-title-dot" style={{ background: 'var(--gold)', boxShadow: '0 0 8px var(--gold)' }} />
         Destaque
       </div>
-      <div className="best-player-crown">👑</div>
-      <div className="best-player-name">{player.nome}</div>
+      {isTop1 && <div className="best-player-crown">👑</div>}
+      <div className="best-player-name" style={!isTop1 ? { marginTop: '12px' } : {}}>{player.nome}</div>
       <div className="best-player-pontos">{player.pontos}</div>
       <div className="best-player-pts-label">pontos totais</div>
       <div className="best-player-stats">
@@ -155,7 +155,7 @@ function BestPlayer({ player }) {
 }
 
 /* ── TOP 10 ── */
-function TopTen({ data }) {
+function TopTen({ data, selected, onSelect }) {
   const top10 = data.slice(0, 10);
   const maxPts = top10[0]?.pontos || 1;
   return (
@@ -167,9 +167,14 @@ function TopTen({ data }) {
       <div className="ranking-list">
         {top10.map((player, i) => {
           const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+          const isSelected = player.nome === selected;
           const barWidth = Math.round((player.pontos / maxPts) * 100);
           return (
-            <div key={player.nome} className={`ranking-item ${rankClass}`}>
+            <div
+              key={player.nome}
+              className={`ranking-item ${rankClass} ${isSelected ? 'selected' : ''}`}
+              onClick={() => onSelect(player.nome)}
+            >
               <div className="ranking-position">
                 {i < 3 ? MEDALS[i] : `${i + 1}°`}
               </div>
@@ -287,10 +292,17 @@ function GeralTable({ data }) {
 
 /* ── APP ── */
 export default function App() {
-  const [month, setMonth]           = useState('all');
-  const [page, setPage]             = useState('resumo');
+  const [month, setMonth]             = useState('all');
+  const [page, setPage]               = useState('resumo');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { data, loading, error }    = useData(month);
+  const [selected, setSelected]       = useState(null);
+  const { data, loading, error }      = useData(month);
+
+  // Reset selected when data changes (month filter)
+  const prevData = data;
+  const featuredPlayer = selected
+    ? data.find(p => p.nome === selected) ?? data[0]
+    : data[0];
 
   const monthLabel = MONTHS.find(m => m.key === month)?.label ?? 'Geral';
 
@@ -298,7 +310,7 @@ export default function App() {
     <div className="layout">
       <Sidebar
         page={page} setPage={setPage}
-        month={month} setMonth={setMonth}
+        month={month} setMonth={(m) => { setMonth(m); setSelected(null); }}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
       />
 
@@ -328,10 +340,14 @@ export default function App() {
             {page === 'resumo' && (
               <div className="resumo-grid">
                 <div className="resumo-top10">
-                  <TopTen data={data} />
+                  <TopTen
+                    data={data}
+                    selected={featuredPlayer?.nome}
+                    onSelect={(nome) => setSelected(nome === featuredPlayer?.nome && nome === data[0]?.nome ? null : nome)}
+                  />
                 </div>
                 <div className="resumo-side">
-                  <BestPlayer player={data[0]} />
+                  <BestPlayer player={featuredPlayer} isTop1={featuredPlayer?.nome === data[0]?.nome} />
                 </div>
               </div>
             )}
