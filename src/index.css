@@ -63,6 +63,13 @@ body::before {
   margin-bottom: 32px;
 }
 
+.header-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(255, 184, 0, 0.4));
+}
+
 .header-icon {
   font-size: 2.4rem;
   line-height: 1;
