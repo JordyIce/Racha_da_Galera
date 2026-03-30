@@ -4,19 +4,111 @@ import LOGO from './logo.js';
 import './index.css';
 
 const MONTHS = [
-  { key: 'all', label: 'Geral' },
-  { key: 'JAN_26', label: 'Janeiro' },
-  { key: 'FEV_26', label: 'Fevereiro' },
-  { key: 'MAR_26', label: 'Março' },
+  { key: 'all',    label: 'Geral',     dot: '⬤' },
+  { key: 'JAN_26', label: 'Janeiro',   dot: '⬤' },
+  { key: 'FEV_26', label: 'Fevereiro', dot: '⬤' },
+  { key: 'MAR_26', label: 'Março',     dot: '⬤' },
 ];
 
 const PAGES = [
-  { key: 'resumo', label: 'Resumo' },
-  { key: 'geral', label: 'Geral' },
+  { key: 'resumo', label: 'Resumo',  icon: '📊' },
+  { key: 'geral',  label: 'Geral',   icon: '📋' },
 ];
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
+const SORT_COLS = [
+  { key: 'pontos',   label: 'Pts',      tip: 'Pontuação' },
+  { key: 'gols',     label: 'Gols',     tip: 'Gols' },
+  { key: 'capa',     label: 'Capas',    tip: 'Capa (Vencedor da Semana)' },
+  { key: 'presenca', label: 'Pres.',    tip: 'Presenças' },
+  { key: 'vitorias', label: 'Vit.',     tip: 'Vitórias' },
+  { key: 'amarelo',  label: '🟨',       tip: 'Cartões Amarelos' },
+  { key: 'vermelho', label: '🟥',       tip: 'Cartões Vermelhos' },
+];
+
+/* ── SIDEBAR ── */
+function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen }) {
+  return (
+    <>
+      <button className="sidebar-toggle" onClick={() => setSidebarOpen(o => !o)}>
+        {sidebarOpen ? '✕' : '☰'}
+      </button>
+
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        {/* Logo */}
+        <div className="sidebar-logo">
+          <img src={LOGO} alt="Racha da Galera" />
+          <div className="sidebar-logo-text">
+            <div className="sidebar-logo-name">Racha da Galera</div>
+            <div className="sidebar-logo-sub">Pontuação</div>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav className="sidebar-nav">
+          <div className="nav-section-label">Páginas</div>
+          {PAGES.map(p => (
+            <button
+              key={p.key}
+              className={`nav-item ${page === p.key ? 'active' : ''}`}
+              onClick={() => { setPage(p.key); setSidebarOpen(false); }}
+            >
+              <span className="nav-item-icon">{p.icon}</span>
+              <span className="nav-item-label">{p.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Period filter at bottom */}
+        <div className="sidebar-footer">
+          <div className="sidebar-period">Período</div>
+          <div className="period-btns">
+            {MONTHS.map(m => (
+              <button
+                key={m.key}
+                className={`period-btn ${month === m.key ? 'active' : ''}`}
+                onClick={() => setMonth(m.key)}
+              >
+                <span className="period-btn-dot" />
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+/* ── SUMMARY STRIP ── */
+function SummaryStrip({ data }) {
+  const totalGols     = data.reduce((s, p) => s + p.gols, 0);
+  const totalVitorias = data.reduce((s, p) => s + p.vitorias, 0);
+  const totalCapas    = data.reduce((s, p) => s + p.capa, 0);
+  const ativos        = data.filter(p => p.pontos > 0).length;
+
+  const cards = [
+    { icon: '👥', value: ativos,        label: 'Jogadores Ativos' },
+    { icon: '⚽', value: totalGols,     label: 'Total de Gols' },
+    { icon: '⚡', value: totalVitorias, label: 'Total de Vitórias' },
+    { icon: '🏆', value: totalCapas,    label: 'Capas Distribuídas' },
+  ];
+
+  return (
+    <div className="summary-strip">
+      {cards.map(c => (
+        <div key={c.label} className="summary-card">
+          <div className="summary-card-icon">{c.icon}</div>
+          <div className="summary-card-value">{c.value}</div>
+          <div className="summary-card-label">{c.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── BEST PLAYER ── */
 function BestPlayer({ player }) {
   if (!player) return null;
   return (
@@ -62,6 +154,7 @@ function BestPlayer({ player }) {
   );
 }
 
+/* ── TOP 10 ── */
 function TopTen({ data }) {
   const top10 = data.slice(0, 10);
   const maxPts = top10[0]?.pontos || 1;
@@ -82,9 +175,9 @@ function TopTen({ data }) {
               </div>
               <div className="ranking-name">{player.nome}</div>
               <div className="ranking-mini-stats">
-                <span className="mini-stat">⚽ {player.gols}</span>
-                <span className="mini-stat">🏆 {player.capa}</span>
-                <span className="mini-stat">⚡ {player.vitorias}</span>
+                <span>⚽ {player.gols}</span>
+                <span>🏆 {player.capa}</span>
+                <span>⚡ {player.vitorias}</span>
               </div>
               <div className="ranking-points">{player.pontos}</div>
               <div className="ranking-bar" style={{ width: `${barWidth}%` }} />
@@ -96,51 +189,10 @@ function TopTen({ data }) {
   );
 }
 
-function SummaryStrip({ data, month }) {
-  const totalGols = data.reduce((s, p) => s + p.gols, 0);
-  const totalVitorias = data.reduce((s, p) => s + p.vitorias, 0);
-  const totalCapas = data.reduce((s, p) => s + p.capa, 0);
-  const ativos = data.filter(p => p.pontos > 0).length;
-  const monthLabel = MONTHS.find(m => m.key === month)?.label ?? 'Geral';
-  return (
-    <div className="summary-strip">
-      <div className="summary-item">
-        <div className="summary-label">Período</div>
-        <div className="summary-value" style={{ fontSize: '1rem', color: 'var(--text)' }}>{monthLabel}</div>
-      </div>
-      <div className="summary-item">
-        <div className="summary-label">Jogadores Ativos</div>
-        <div className="summary-value">{ativos}</div>
-      </div>
-      <div className="summary-item">
-        <div className="summary-label">Total de Gols</div>
-        <div className="summary-value">{totalGols}</div>
-      </div>
-      <div className="summary-item">
-        <div className="summary-label">Total de Vitórias</div>
-        <div className="summary-value">{totalVitorias}</div>
-      </div>
-      <div className="summary-item">
-        <div className="summary-label">Capas Distribuídas</div>
-        <div className="summary-value">{totalCapas}</div>
-      </div>
-    </div>
-  );
-}
-
-const SORT_COLS = [
-  { key: 'pontos',   label: 'Pts' },
-  { key: 'gols',     label: 'Gols' },
-  { key: 'capa',     label: 'Capas' },
-  { key: 'presenca', label: 'Presenças' },
-  { key: 'vitorias', label: 'Vitórias' },
-  { key: 'amarelo',  label: '🟨' },
-  { key: 'vermelho', label: '🟥' },
-];
-
+/* ── GERAL TABLE ── */
 function GeralTable({ data }) {
   const [sortKey, setSortKey] = useState('pontos');
-  const [sortAsc, setSortAsc] = useState(false);
+  const [sortAsc, setSortAsc]  = useState(false);
 
   const sorted = [...data].sort((a, b) => {
     const diff = a[sortKey] - b[sortKey];
@@ -152,7 +204,8 @@ function GeralTable({ data }) {
     else { setSortKey(key); setSortAsc(false); }
   };
 
-  const maxPts = data[0]?.pontos || 1;
+  const maxPts = Math.max(...data.map(p => p.pontos), 1);
+  const isPtsSorted = sortKey === 'pontos' && !sortAsc;
 
   return (
     <div className="panel">
@@ -167,16 +220,17 @@ function GeralTable({ data }) {
           <thead>
             <tr>
               <th className="col-pos">#</th>
-              <th className="col-nome">Nome</th>
+              <th className="th-nome col-nome">Jogador</th>
               {SORT_COLS.map(c => (
                 <th
                   key={c.key}
-                  className={`col-num sortable ${sortKey === c.key ? 'sorted' : ''}`}
+                  title={c.tip}
+                  className={`sortable ${sortKey === c.key ? 'sorted' : ''}`}
                   onClick={() => handleSort(c.key)}
                 >
                   {c.label}
                   <span className="sort-arrow">
-                    {sortKey === c.key ? (sortAsc ? ' ↑' : ' ↓') : ' ↕'}
+                    {sortKey === c.key ? (sortAsc ? '↑' : '↓') : '↕'}
                   </span>
                 </th>
               ))}
@@ -184,29 +238,43 @@ function GeralTable({ data }) {
           </thead>
           <tbody>
             {sorted.map((player, i) => {
-              const isTop3 = i < 3 && sortKey === 'pontos' && !sortAsc;
+              const isTop3    = isPtsSorted && i < 3;
               const rankClass = isTop3 ? `rank-${i + 1}` : '';
-              const barW = Math.round((player.pontos / maxPts) * 100);
+              const barW      = Math.round((player.pontos / maxPts) * 100);
+
+              const numCell = (val) =>
+                val === 0
+                  ? <span className="num-zero">—</span>
+                  : <span className="num-cell">{val}</span>;
+
+              const negCell = (val) =>
+                val === 0
+                  ? <span className="neg-zero">—</span>
+                  : <span className="neg-cell">-{val}</span>;
+
               return (
                 <tr key={player.nome} className={`geral-row ${rankClass}`}>
                   <td className="col-pos">
-                    {isTop3 ? MEDALS[i] : <span className="pos-num">{i + 1}</span>}
+                    {isTop3
+                      ? <span style={{ fontSize: '1rem' }}>{MEDALS[i]}</span>
+                      : <span className="pos-badge">{i + 1}</span>
+                    }
                   </td>
                   <td className="col-nome">
-                    <div className="nome-wrap">
+                    <div className="nome-cell">
                       <span className="nome-text">{player.nome}</span>
-                      {sortKey === 'pontos' && (
-                        <div className="nome-bar" style={{ width: `${barW}%` }} />
-                      )}
+                      <div className="nome-bar-track">
+                        <div className="nome-bar-fill" style={{ width: `${barW}%` }} />
+                      </div>
                     </div>
                   </td>
-                  <td className={`col-num pts-col ${rankClass}`}>{player.pontos}</td>
-                  <td className="col-num">{player.gols || '—'}</td>
-                  <td className="col-num">{player.capa || '—'}</td>
-                  <td className="col-num">{player.presenca || '—'}</td>
-                  <td className="col-num">{player.vitorias || '—'}</td>
-                  <td className="col-num neg">{player.amarelo || '—'}</td>
-                  <td className="col-num neg">{player.vermelho || '—'}</td>
+                  <td><span className="pts-cell">{player.pontos}</span></td>
+                  <td>{numCell(player.gols)}</td>
+                  <td>{numCell(player.capa)}</td>
+                  <td>{numCell(player.presenca)}</td>
+                  <td>{numCell(player.vitorias)}</td>
+                  <td>{negCell(player.amarelo)}</td>
+                  <td>{negCell(player.vermelho)}</td>
                 </tr>
               );
             })}
@@ -217,74 +285,57 @@ function GeralTable({ data }) {
   );
 }
 
+/* ── APP ── */
 export default function App() {
-  const [month, setMonth] = useState('all');
-  const [page, setPage] = useState('resumo');
-  const { data, loading, error } = useData(month);
-  const best = data[0] ?? null;
+  const [month, setMonth]           = useState('all');
+  const [page, setPage]             = useState('resumo');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data, loading, error }    = useData(month);
+
+  const monthLabel = MONTHS.find(m => m.key === month)?.label ?? 'Geral';
 
   return (
-    <div className="app">
-      <header className="header">
-        <img src={LOGO} alt="Racha da Galera" className="header-logo" />
-        <div>
-          <div className="header-title">Racha da Galera</div>
-          <div className="header-sub">Pontuação</div>
+    <div className="layout">
+      <Sidebar
+        page={page} setPage={setPage}
+        month={month} setMonth={setMonth}
+        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+      />
+
+      <main className="main-content">
+        <div className="page-header">
+          <div className="page-title">
+            {PAGES.find(p => p.key === page)?.label}
+          </div>
+          <div className="page-subtitle">
+            {monthLabel} · Racha da Galera
+          </div>
         </div>
-      </header>
 
-      <nav className="page-nav">
-        {PAGES.map(p => (
-          <button
-            key={p.key}
-            className={`page-nav-btn ${page === p.key ? 'active' : ''}`}
-            onClick={() => setPage(p.key)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </nav>
+        {loading && (
+          <div className="loading-wrap">
+            <div className="loading-ball">⚽</div>
+            <div className="loading-text">Carregando dados...</div>
+          </div>
+        )}
 
-      <div className="filter-section">
-        <span className="filter-label">Período</span>
-        {MONTHS.map(m => (
-          <button
-            key={m.key}
-            className={`filter-btn ${month === m.key ? 'active' : ''}`}
-            onClick={() => setMonth(m.key)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+        {error && <div className="error-msg">Erro ao carregar dados: {error}</div>}
 
-      {loading && (
-        <div className="loading-wrap">
-          <div className="loading-ball">⚽</div>
-          <div className="loading-text">Carregando dados...</div>
-        </div>
-      )}
+        {!loading && !error && data.length > 0 && (
+          <>
+            <SummaryStrip data={data} />
 
-      {error && (
-        <div className="error-msg">Erro ao carregar dados: {error}</div>
-      )}
+            {page === 'resumo' && (
+              <div className="dashboard-grid">
+                <TopTen data={data} />
+                <div><BestPlayer player={data[0]} /></div>
+              </div>
+            )}
 
-      {!loading && !error && data.length > 0 && (
-        <>
-          <SummaryStrip data={data} month={month} />
-
-          {page === 'resumo' && (
-            <div className="dashboard-grid">
-              <TopTen data={data} />
-              <div><BestPlayer player={best} /></div>
-            </div>
-          )}
-
-          {page === 'geral' && (
-            <GeralTable data={data} />
-          )}
-        </>
-      )}
+            {page === 'geral' && <GeralTable data={data} />}
+          </>
+        )}
+      </main>
     </div>
   );
 }
