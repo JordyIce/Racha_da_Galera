@@ -11,7 +11,7 @@ const MONTHS = [
 ];
 
 const PAGES = [
-  { key: 'resumo', label: 'Resumo',  icon: '📊' },
+  { key: 'resumo', label: 'TOP 10', icon: '📊' },
   { key: 'geral',  label: 'Geral',   icon: '📋' },
 ];
 
@@ -336,7 +336,11 @@ export default function App() {
               </div>
             )}
 
-            {page === 'geral' && <GeralTable data={data} />}
+            {page === 'geral' && (
+              <div className="geral-wrap">
+                <GeralTable data={data} />
+              </div>
+            )}
           </>
         )}
       </main>
