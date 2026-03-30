@@ -334,7 +334,7 @@ export default function App() {
         {error && <div className="error-msg">Erro ao carregar dados: {error}</div>}
 
         {!loading && !error && data.length > 0 && (
-          <>
+          <div className="page-body">
             <SummaryStrip data={data} />
 
             {page === 'resumo' && (
@@ -357,7 +357,7 @@ export default function App() {
                 <GeralTable data={data} />
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
     </div>
