@@ -519,6 +519,10 @@ body {
 .stat-box-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
 .stat-box.negative .stat-box-value { color: var(--red); }
 
+.geral-wrap {
+  width: 100%;
+}
+
 /* ══════════════════════════════
    GERAL TABLE
 ══════════════════════════════ */
@@ -526,6 +530,7 @@ body {
   overflow-x: auto;
   border-radius: var(--radius);
   margin: 0 -4px;
+  width: 100%;
 }
 
 .geral-table {
