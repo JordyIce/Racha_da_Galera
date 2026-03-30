@@ -742,6 +742,9 @@ body {
     gap: 14px;
   }
 
+  .resumo-side  { order: -1; } /* Destaque aparece primeiro no mobile */
+  .resumo-top10 { order:  1; }
+
   /* ── Ranking items ── */
   .ranking-item {
     padding: 12px 14px;
