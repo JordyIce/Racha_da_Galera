@@ -12,9 +12,8 @@ const MONTHS = [
 ];
 
 const PAGES = [
-  { key: 'resumo', label: 'TOP 10',     icon: '📊' },
-  { key: 'geral',  label: 'Geral',      icon: '📋' },
-  { key: 'fifa',   label: 'FIFA Cards', icon: '🃏' },
+  { key: 'resumo', label: 'TOP 10',  icon: '📊' },
+  { key: 'geral',  label: 'Geral',   icon: '📋' },
 ];
 
 const MEDALS = ['🥇', '🥈', '🥉'];
