@@ -806,3 +806,191 @@ body {
   .geral-table th,
   .geral-table td { padding: 8px 6px; font-size: 0.7rem; }
 }
+
+/* ══════════════════════════════
+   FIFA CARDS PAGE
+══════════════════════════════ */
+.fc-page {
+  width: 100%;
+  padding-top: 8px;
+}
+
+.fc-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 36px;
+  justify-content: flex-start;
+}
+
+/* ── Card shell ── */
+.fc-card-wrap {
+  perspective: 800px;
+}
+
+.fc-card {
+  position: relative;
+  width: 230px;
+  height: 325px;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.7);
+  cursor: default;
+}
+
+.fc-card-wrap:hover .fc-card {
+  transform: rotateY(5deg) rotateX(-3deg) scale(1.05);
+  box-shadow: -10px 16px 48px rgba(0,0,0,0.8), 0 0 40px rgba(255,210,0,0.25);
+}
+
+.fc-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* ── Top left ── */
+.fc-top {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.fc-rating {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: #2c1a00;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+  letter-spacing: 0.01em;
+}
+
+.fc-posicao {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  color: #2c1a00;
+  line-height: 1;
+}
+
+.fc-flag { border-radius: 2px; overflow: hidden; }
+
+.fc-clube { margin-top: 4px; }
+
+.fc-clube-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));
+}
+
+/* ── Photo ── */
+.fc-photo-wrap {
+  position: absolute;
+  bottom: 112px;
+  left: 50%;
+  transform: translateX(-42%);
+  width: 200px;
+  height: 200px;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.fc-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* ── Bottom ── */
+.fc-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 115px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 10px 10px;
+}
+
+.fc-nome {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: #2c1a00;
+  line-height: 1;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.fc-divider {
+  width: 85%;
+  height: 1px;
+  background: rgba(44,26,0,0.35);
+  margin-bottom: 6px;
+}
+
+.fc-stats {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.fc-stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.fc-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.fc-stats-col:last-child .fc-stat {
+  flex-direction: row-reverse;
+}
+
+.fc-stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  color: #2c1a00;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.fc-stat-label {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #5a3a00;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .fc-grid { gap: 20px; justify-content: center; }
+  .fc-card { width: 200px; height: 282px; }
+  .fc-rating { font-size: 2.2rem; }
+  .fc-photo-wrap { width: 172px; height: 172px; bottom: 98px; }
+  .fc-bottom { height: 100px; padding: 6px 8px 8px; }
+  .fc-nome { font-size: 1.15rem; }
+  .fc-stat-val { font-size: 0.85rem; }
+  .fc-stat-label { font-size: 0.52rem; }
+}
