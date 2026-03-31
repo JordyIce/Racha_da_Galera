@@ -3,7 +3,7 @@ import { DELA_PHOTO } from './players.js';
 import LOGO from './logo.js';
 
 const BrazilFlag = () => (
-  <svg viewBox="0 0 22 15" xmlns="http://www.w3.org/2000/svg" style={{width:'30px',height:'20px',borderRadius:'2px',display:'block',boxShadow:'0 1px 4px rgba(0,0,0,0.4)'}}>
+  <svg viewBox="0 0 22 15" xmlns="http://www.w3.org/2000/svg" style={{width:'24px',height:'16px',borderRadius:'2px',display:'block',boxShadow:'0 1px 3px rgba(0,0,0,0.4)'}}>
     <rect width="22" height="15" fill="#009c3b"/>
     <polygon points="11,1.5 20.5,7.5 11,13.5 1.5,7.5" fill="#FEDF00"/>
     <circle cx="11" cy="7.5" r="3.2" fill="#002776"/>
