@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from './hooks/useData';
 import LOGO from './logo.js';
+import FifaCards from './FifaCards.jsx';
 import './index.css';
 
 const MONTHS = [
@@ -11,8 +12,9 @@ const MONTHS = [
 ];
 
 const PAGES = [
-  { key: 'resumo', label: 'TOP 10', icon: '📊' },
-  { key: 'geral',  label: 'Geral',   icon: '📋' },
+  { key: 'resumo', label: 'TOP 10',     icon: '📊' },
+  { key: 'geral',  label: 'Geral',      icon: '📋' },
+  { key: 'fifa',   label: 'FIFA Cards', icon: '🃏' },
 ];
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -324,16 +326,23 @@ export default function App() {
           </div>
         </div>
 
-        {loading && (
+        {/* FIFA Cards page doesn't need data */}
+        {page === 'fifa' && (
+          <div className="page-body">
+            <FifaCards />
+          </div>
+        )}
+
+        {loading && page !== 'fifa' && (
           <div className="loading-wrap">
             <div className="loading-ball">⚽</div>
             <div className="loading-text">Carregando dados...</div>
           </div>
         )}
 
-        {error && <div className="error-msg">Erro ao carregar dados: {error}</div>}
+        {error && page !== 'fifa' && <div className="error-msg">Erro ao carregar dados: {error}</div>}
 
-        {!loading && !error && data.length > 0 && (
+        {!loading && !error && data.length > 0 && page !== 'fifa' && (
           <div className="page-body">
             <SummaryStrip data={data} />
 
