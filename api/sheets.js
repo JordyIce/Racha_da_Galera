@@ -30,7 +30,10 @@ function parseCSV(text) {
 }
 
 function parseNum(v) {
-  const n = parseInt((v || '').replace(/[^\d-]/g, ''), 10);
+  if (!v || v.trim() === '') return 0;
+  // Troca vírgula decimal por ponto (ex: "2,5" → "2.5")
+  const normalized = v.trim().replace(',', '.');
+  const n = parseFloat(normalized);
   return isNaN(n) ? 0 : n;
 }
 
@@ -48,8 +51,9 @@ function processRows(rows) {
 }
 
 function calcPontos(p) {
-  return p.gols * 3 + p.capa * 10 + p.presenca * 3 + p.vitorias * 3
+  const total = p.gols * 3 + p.capa * 10 + p.presenca * 3 + p.vitorias * 3
     + p.amarelo * (-5) + p.vermelho * (-10);
+  return Math.round(total * 10) / 10; // mantém 1 casa decimal se necessário
 }
 
 function mergeMonths(byMonth) {
