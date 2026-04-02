@@ -38,7 +38,10 @@ const SORT_COLS = [
 ];
 
 /* ── SIDEBAR ── */
-function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen }) {
+function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen, updatedAt, onRefresh, totalRegistros }) {
+  const horaAtualizado = updatedAt
+    ? updatedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    : '--:--';
   return (
     <>
       <button className="sidebar-toggle" onClick={() => setSidebarOpen(o => !o)}>
@@ -70,7 +73,7 @@ function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen }
           ))}
         </nav>
 
-        {/* Period filter at bottom */}
+        {/* Period filter */}
         <div className="sidebar-footer">
           <div className="sidebar-period">Período</div>
           <div className="period-select-wrap">
@@ -85,6 +88,16 @@ function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen }
             </select>
             <span className="period-select-arrow">▾</span>
           </div>
+        </div>
+
+        {/* Update footer */}
+        <div className="sidebar-update">
+          <div className="sidebar-update-time">Atualizado {horaAtualizado}</div>
+          <button className="sidebar-refresh-btn" onClick={onRefresh}>
+            <span className="sidebar-refresh-icon">↻</span>
+            Atualizar
+          </button>
+          <div className="sidebar-registros">{totalRegistros} jogadores</div>
         </div>
       </aside>
     </>
@@ -306,7 +319,7 @@ export default function App() {
   const [page, setPage]               = useState('resumo');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selected, setSelected]       = useState(null);
-  const { data, loading, error }      = useData(month);
+  const { data, loading, error, updatedAt, refresh } = useData(month);
 
   // Reset selected when data changes (month filter)
   const prevData = data;
@@ -322,6 +335,8 @@ export default function App() {
         page={page} setPage={setPage}
         month={month} setMonth={(m) => { setMonth(m); setSelected(null); }}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+        updatedAt={updatedAt} onRefresh={refresh}
+        totalRegistros={data.length}
       />
 
       <main className="main-content">
