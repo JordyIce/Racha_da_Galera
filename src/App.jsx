@@ -5,10 +5,19 @@ import FifaCards from './FifaCards.jsx';
 import './index.css';
 
 const MONTHS = [
-  { key: 'all',    label: 'Geral',     dot: '⬤' },
-  { key: 'JAN_26', label: 'Janeiro',   dot: '⬤' },
-  { key: 'FEV_26', label: 'Fevereiro', dot: '⬤' },
-  { key: 'MAR_26', label: 'Março',     dot: '⬤' },
+  { key: 'all',    label: 'Geral'     },
+  { key: 'JAN_26', label: 'Janeiro'   },
+  { key: 'FEV_26', label: 'Fevereiro' },
+  { key: 'MAR_26', label: 'Março'     },
+  { key: 'ABR_26', label: 'Abril'     },
+  { key: 'MAI_26', label: 'Maio'      },
+  { key: 'JUN_26', label: 'Junho'     },
+  { key: 'JUL_26', label: 'Julho'     },
+  { key: 'AGO_26', label: 'Agosto'    },
+  { key: 'SET_26', label: 'Setembro'  },
+  { key: 'OUT_26', label: 'Outubro'   },
+  { key: 'NOV_26', label: 'Novembro'  },
+  { key: 'DEZ_26', label: 'Dezembro'  },
 ];
 
 const PAGES = [
