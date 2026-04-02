@@ -1,7 +1,10 @@
 export const config = { runtime: 'edge' };
 
 const SHEET_ID = '1Evb7ZeUtS_gNiXDLAtuxMj4yzXAlNY2MK5KgKJu-HIQ';
-const MONTH_SHEETS = ['JAN_26', 'FEV_26', 'MAR_26'];
+const MONTH_SHEETS = [
+  'JAN_26', 'FEV_26', 'MAR_26', 'ABR_26', 'MAI_26', 'JUN_26',
+  'JUL_26', 'AGO_26', 'SET_26', 'OUT_26', 'NOV_26', 'DEZ_26',
+];
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
@@ -82,11 +85,18 @@ export default async function handler(req) {
     const byMonth = {};
 
     await Promise.all(months.map(async (m) => {
-      const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${m}`;
-      const resp = await fetch(csvUrl);
-      if (!resp.ok) throw new Error(`Failed to fetch ${m}`);
-      const text = await resp.text();
-      byMonth[m] = processRows(parseCSV(text));
+      try {
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${m}`;
+        const resp = await fetch(csvUrl);
+        if (!resp.ok) return; // aba ainda não existe, ignora
+        const text = await resp.text();
+        // Google retorna HTML quando a aba não existe
+        if (text.trim().startsWith('<')) return;
+        const rows = processRows(parseCSV(text));
+        if (rows.length > 0) byMonth[m] = rows;
+      } catch (e) {
+        // ignora erros de abas inexistentes
+      }
     }));
 
     const data = month === 'all' ? mergeMonths(byMonth) : byMonth[month];
