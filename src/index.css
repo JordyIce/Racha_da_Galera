@@ -239,6 +239,67 @@ body {
   pointer-events: none;
 }
 
+/* update footer */
+.sidebar-update {
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-update-time {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.sidebar-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.sidebar-refresh-btn:hover {
+  background: var(--panel-hover);
+  border-color: rgba(255,255,255,0.12);
+  color: var(--text);
+}
+
+.sidebar-refresh-btn:active .sidebar-refresh-icon {
+  display: inline-block;
+  animation: spin-once 0.4s linear;
+}
+
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sidebar-refresh-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.sidebar-registros {
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
 /* mobile toggle */
 .sidebar-toggle {
   display: none;
