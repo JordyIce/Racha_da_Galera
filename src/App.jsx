@@ -21,8 +21,9 @@ const MONTHS = [
 ];
 
 const PAGES = [
-  { key: 'resumo', label: 'TOP 10',  icon: '📊' },
-  { key: 'geral',  label: 'Geral',   icon: '📋' },
+  { key: 'resumo',   label: 'TOP 10',   icon: '📊' },
+  { key: 'geral',    label: 'Geral',    icon: '📋' },
+  { key: 'goleiros', label: 'Goleiros', icon: '🧤' },
 ];
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -38,7 +39,7 @@ const SORT_COLS = [
 ];
 
 /* ── SIDEBAR ── */
-function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen, updatedAt, onRefresh, totalRegistros }) {
+function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen, updatedAt, onRefresh, totalRegistros, labelRegistros }) {
   const horaAtualizado = updatedAt
     ? updatedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     : '--:--';
@@ -97,7 +98,7 @@ function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen, 
             <span className="sidebar-refresh-icon">↻</span>
             Atualizar
           </button>
-          <div className="sidebar-registros">{totalRegistros} jogadores</div>
+          <div className="sidebar-registros">{totalRegistros} {labelRegistros}</div>
         </div>
       </aside>
     </>
@@ -105,14 +106,14 @@ function Sidebar({ page, setPage, month, setMonth, sidebarOpen, setSidebarOpen, 
 }
 
 /* ── SUMMARY STRIP ── */
-function SummaryStrip({ data }) {
+function SummaryStrip({ data, labelAtivos = 'Jogadores Ativos' }) {
   const totalGols     = data.reduce((s, p) => s + p.gols, 0);
   const totalVitorias = data.reduce((s, p) => s + p.vitorias, 0);
   const totalCapas    = data.reduce((s, p) => s + p.capa, 0);
   const ativos        = data.filter(p => p.pontos > 0).length;
 
   const cards = [
-    { icon: '👥', value: ativos,        label: 'Jogadores Ativos' },
+    { icon: '👥', value: ativos,        label: labelAtivos },
     { icon: '⚽', value: totalGols,     label: 'Total de Gols' },
     { icon: '⚡', value: totalVitorias, label: 'Total de Vitórias' },
     { icon: '🏆', value: totalCapas,    label: 'Capas Distribuídas' },
@@ -177,15 +178,15 @@ function BestPlayer({ player, isTop1 }) {
   );
 }
 
-/* ── TOP 10 ── */
-function TopTen({ data, selected, onSelect }) {
+/* ── TOP 10 (ou ranking completo, se <10) ── */
+function TopTen({ data, selected, onSelect, title = 'Top 10 — Ranking' }) {
   const top10 = data.slice(0, 10);
   const maxPts = top10[0]?.pontos || 1;
   return (
     <div className="panel">
       <div className="panel-title">
         <span className="panel-title-dot" />
-        Top 10 — Ranking
+        {title}
       </div>
       <div className="ranking-list">
         {top10.map((player, i) => {
@@ -218,7 +219,7 @@ function TopTen({ data, selected, onSelect }) {
 }
 
 /* ── GERAL TABLE ── */
-function GeralTable({ data }) {
+function GeralTable({ data, labelCount = 'jogadores' }) {
   const [sortKey, setSortKey] = useState('pontos');
   const [sortAsc, setSortAsc]  = useState(false);
 
@@ -239,8 +240,8 @@ function GeralTable({ data }) {
     <div className="panel">
       <div className="panel-title">
         <span className="panel-title-dot" />
-        Todos os Jogadores
-        <span className="panel-count">{data.length} jogadores</span>
+        Todos os {labelCount === 'goleiros' ? 'Goleiros' : 'Jogadores'}
+        <span className="panel-count">{data.length} {labelCount}</span>
       </div>
 
       <div className="geral-table-wrap">
@@ -319,24 +320,30 @@ export default function App() {
   const [page, setPage]               = useState('resumo');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selected, setSelected]       = useState(null);
-  const { data, loading, error, updatedAt, refresh } = useData(month);
+  const { data, goleiros, loading, error, updatedAt, refresh } = useData(month);
 
-  // Reset selected when data changes (month filter)
-  const prevData = data;
+  // Dataset ativo muda conforme a página
+  const isGoleiros = page === 'goleiros';
+  const activeData = isGoleiros ? goleiros : data;
+  const labelAtivos    = isGoleiros ? 'Goleiros Ativos' : 'Jogadores Ativos';
+  const labelRegistros = isGoleiros ? 'goleiros'        : 'jogadores';
+  const topTitle       = isGoleiros ? 'Ranking dos Goleiros' : 'Top 10 — Ranking';
+
   const featuredPlayer = selected
-    ? data.find(p => p.nome === selected) ?? data[0]
-    : data[0];
+    ? activeData.find(p => p.nome === selected) ?? activeData[0]
+    : activeData[0];
 
   const monthLabel = MONTHS.find(m => m.key === month)?.label ?? 'Geral';
 
   return (
     <div className="layout">
       <Sidebar
-        page={page} setPage={setPage}
+        page={page} setPage={(p) => { setPage(p); setSelected(null); }}
         month={month} setMonth={(m) => { setMonth(m); setSelected(null); }}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
         updatedAt={updatedAt} onRefresh={refresh}
-        totalRegistros={data.length}
+        totalRegistros={activeData.length}
+        labelRegistros={labelRegistros}
       />
 
       <main className="main-content">
@@ -365,29 +372,40 @@ export default function App() {
 
         {error && page !== 'fifa' && <div className="error-msg">Erro ao carregar dados: {error}</div>}
 
-        {!loading && !error && data.length > 0 && page !== 'fifa' && (
+        {!loading && !error && page !== 'fifa' && (
           <div className="page-body">
-            <SummaryStrip data={data} />
-
-            {page === 'resumo' && (
-              <div className="resumo-grid">
-                <div className="resumo-top10">
-                  <TopTen
-                    data={data}
-                    selected={featuredPlayer?.nome}
-                    onSelect={(nome) => setSelected(nome === featuredPlayer?.nome && nome === data[0]?.nome ? null : nome)}
-                  />
-                </div>
-                <div className="resumo-side">
-                  <BestPlayer player={featuredPlayer} isTop1={featuredPlayer?.nome === data[0]?.nome} />
-                </div>
+            {activeData.length === 0 ? (
+              <div className="error-msg">
+                {isGoleiros
+                  ? 'Nenhum goleiro encontrado na aba GOL_26.'
+                  : 'Nenhum jogador encontrado para este período.'}
               </div>
-            )}
+            ) : (
+              <>
+                <SummaryStrip data={activeData} labelAtivos={labelAtivos} />
 
-            {page === 'geral' && (
-              <div className="geral-wrap">
-                <GeralTable data={data} />
-              </div>
+                {(page === 'resumo' || page === 'goleiros') && (
+                  <div className="resumo-grid">
+                    <div className="resumo-top10">
+                      <TopTen
+                        data={activeData}
+                        selected={featuredPlayer?.nome}
+                        onSelect={(nome) => setSelected(nome === featuredPlayer?.nome && nome === activeData[0]?.nome ? null : nome)}
+                        title={topTitle}
+                      />
+                    </div>
+                    <div className="resumo-side">
+                      <BestPlayer player={featuredPlayer} isTop1={featuredPlayer?.nome === activeData[0]?.nome} />
+                    </div>
+                  </div>
+                )}
+
+                {page === 'geral' && (
+                  <div className="geral-wrap">
+                    <GeralTable data={activeData} labelCount={labelRegistros} />
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
