@@ -8,6 +8,7 @@ const MONTH_SHEETS = [
 ];
 
 const GOLEIROS_SHEET = 'GOL_26';
+const MAX_TRIES = 3;
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
@@ -55,41 +56,60 @@ function calcPontos(p) {
   return Math.round(total * 10) / 10;
 }
 
+const normName = (s) => (s || '').trim().toLowerCase();
+
+// Soma as abas mensais. A chave é o nome normalizado (sem diferença de
+// maiúscula/minúscula ou espaço), para o mesmo jogador não virar duas linhas.
 function mergeMonths(byMonth) {
   const map = {};
   for (const players of Object.values(byMonth)) {
     for (const p of players) {
-      if (!map[p.nome]) {
-        map[p.nome] = { ...p };
+      const key = normName(p.nome);
+      if (!map[key]) {
+        map[key] = { ...p };
       } else {
-        map[p.nome].gols     += p.gols;
-        map[p.nome].capa     += p.capa;
-        map[p.nome].presenca += p.presenca;
-        map[p.nome].vitorias += p.vitorias;
-        map[p.nome].amarelo  += p.amarelo;
-        map[p.nome].vermelho += p.vermelho;
+        map[key].gols     += p.gols;
+        map[key].capa     += p.capa;
+        map[key].presenca += p.presenca;
+        map[key].vitorias += p.vitorias;
+        map[key].amarelo  += p.amarelo;
+        map[key].vermelho += p.vermelho;
       }
     }
   }
   return Object.values(map).map(p => ({ ...p, pontos: calcPontos(p) }));
 }
 
-async function fetchSheet(sheetName) {
-  try {
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
-    const resp = await fetch(csvUrl);
-    if (!resp.ok) return null;
-    const text = await resp.text();
-    // Google retorna HTML quando a aba não existe
-    if (text.trim().startsWith('<')) return null;
-    const rows = processRows(parseCSV(text));
-    return rows.length > 0 ? rows : null;
-  } catch {
-    return null;
-  }
-}
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-const normName = (s) => (s || '').trim().toLowerCase();
+// Devolve { rows, status }. status: ok | empty | missing | http_XXX | error
+// Tenta até MAX_TRIES vezes antes de desistir, para uma falha passageira
+// do Google não derrubar uma aba inteira da soma.
+async function fetchSheet(sheetName) {
+  const csvUrl =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv` +
+    `&sheet=${encodeURIComponent(sheetName)}&_=${Date.now()}`;
+  let lastStatus = 'error';
+
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    try {
+      const resp = await fetch(csvUrl, { cache: 'no-store' });
+      if (!resp.ok) {
+        lastStatus = `http_${resp.status}`;
+      } else {
+        const text = await resp.text();
+        // Google retorna HTML quando a aba não existe
+        if (text.trim().startsWith('<')) return { rows: [], status: 'missing' };
+        const rows = processRows(parseCSV(text));
+        return { rows, status: rows.length > 0 ? 'ok' : 'empty' };
+      }
+    } catch {
+      lastStatus = 'error';
+    }
+    if (attempt < MAX_TRIES) await sleep(300 * attempt);
+  }
+  return { rows: [], status: lastStatus };
+}
 
 export default async function handler(req) {
   const url = new URL(req.url);
@@ -97,25 +117,29 @@ export default async function handler(req) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
   };
 
   try {
-    // ── 1) Goleiros: aba GOL_26 é a fonte canônica (dados acumulados + lista de nomes)
-    const goleirosRaw = (await fetchSheet(GOLEIROS_SHEET)) || [];
+    // ── 1) Goleiros: aba GOL_26 é a fonte canônica
+    const gol = await fetchSheet(GOLEIROS_SHEET);
+    const goleirosRaw = gol.rows;
     const goleirosSet = new Set(goleirosRaw.map(g => normName(g.nome)));
 
-    // Se o CSV já traz Total Pontos, usa; senão, recalcula
     const goleiros = goleirosRaw.map(g => ({
       ...g,
       pontos: g.pontos || calcPontos(g),
     }));
 
-    // ── 2) Jogadores de linha: abas mensais, removendo qualquer nome que esteja na GOL_26
+    // ── 2) Jogadores de linha: abas mensais
     const months = month === 'all' ? MONTH_SHEETS : [month];
     const byMonth = {};
+    const sheetStatus = { [GOLEIROS_SHEET]: gol.status };
+
     await Promise.all(months.map(async (m) => {
-      const rows = await fetchSheet(m);
-      if (rows && rows.length > 0) byMonth[m] = rows;
+      const { rows, status } = await fetchSheet(m);
+      sheetStatus[m] = status;
+      if (rows.length > 0) byMonth[m] = rows;
     }));
 
     let jogadores;
@@ -128,11 +152,16 @@ export default async function handler(req) {
       }));
     }
 
-    // Remove goleiros do ranking dos jogadores de linha
     jogadores = jogadores.filter(p => !goleirosSet.has(normName(p.nome)));
 
     return new Response(
-      JSON.stringify({ ok: true, data: jogadores, goleiros }),
+      JSON.stringify({
+        ok: true,
+        data: jogadores,
+        goleiros,
+        // diagnóstico: status de cada aba lida nesta chamada
+        meta: { month, sheets: sheetStatus, generatedAt: new Date().toISOString() },
+      }),
       { headers: corsHeaders }
     );
   } catch (err) {
